@@ -1,0 +1,250 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  owner
+  user
+}
+
+enum LanderType {
+  price_guess
+  price_candles
+  ai_agents
+  profit_calc
+  quiz
+  live_signals
+  copy_desk
+  airdrop
+  vault
+  briefing
+  bonus_wheel
+}
+
+enum LeadStatus {
+  new
+  lead
+  sale
+  confirmed
+  rejected
+  duplicate
+}
+
+enum EventType {
+  back_button
+  exit_shown
+  exit_closed
+  exit_clicked
+  land_view
+  form_start
+  form_submit
+}
+
+model User {
+  id           String   @id @default(cuid())
+  login        String   @unique
+  passwordHash String
+  name         String
+  role         Role     @default(user)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  campaigns     Campaign[]
+  trackingLinks TrackingLink[]
+  clicks        Click[]        @relation("AffiliateClicks")
+  leads         Lead[]         @relation("AffiliateLeads")
+  integrations  IntegrationUser[]
+}
+
+model Campaign {
+  id             String  @id @default(cuid())
+  name           String
+  active         Boolean @default(true)
+  affiliateId    String?
+  affiliate      User?   @relation(fields: [affiliateId], references: [id], onDelete: SetNull)
+  prelandUrl     String?
+  exitPopup      Boolean @default(true)
+  timedPopup     Boolean @default(false)
+  timedPopupSec  Int     @default(15)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  trackingLinks  TrackingLink[]
+  clicks         Click[]
+  leads          Lead[]
+  landers        CampaignLander[]
+  integrations   CampaignIntegration[]
+}
+
+model Integration {
+  id        String   @id @default(cuid())
+  name      String
+  code      String   @db.MediumText
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  campaigns CampaignIntegration[]
+  users     IntegrationUser[]
+}
+
+model IntegrationUser {
+  integrationId String
+  userId        String
+  integration   Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([integrationId, userId])
+  @@index([userId])
+}
+
+model CampaignIntegration {
+  campaignId    String
+  integrationId String
+  weight        Int         @default(100)
+  campaign      Campaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  integration   Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  @@id([campaignId, integrationId])
+}
+
+model Lander {
+  id       String     @id @default(cuid())
+  slug     String     @unique
+  name     String
+  type     LanderType
+  weight   Int        @default(100)
+  active   Boolean    @default(true)
+  dailyCap Int?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  trackingLinks TrackingLink[]
+  clicks        Click[]
+  events        Event[]
+  leads         Lead[]
+  campaigns     CampaignLander[]
+}
+
+model CampaignLander {
+  campaignId String
+  landerId   String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  lander     Lander   @relation(fields: [landerId], references: [id], onDelete: Cascade)
+
+  @@id([campaignId, landerId])
+}
+
+model TrackingLink {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  campaignId  String
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  landerId    String?
+  lander      Lander?  @relation(fields: [landerId], references: [id], onDelete: SetNull)
+  affiliateId String
+  affiliate   User     @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  clicks Click[]
+}
+
+model Click {
+  id             String        @id @default(cuid())
+  clickId        String        @unique
+  trackingLinkId String?
+  trackingLink   TrackingLink? @relation(fields: [trackingLinkId], references: [id], onDelete: SetNull)
+  campaignId     String?
+  campaign       Campaign?     @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  landerId       String?
+  lander         Lander?       @relation(fields: [landerId], references: [id], onDelete: SetNull)
+  affiliateId    String?
+  affiliate      User?         @relation("AffiliateClicks", fields: [affiliateId], references: [id], onDelete: SetNull)
+  ip             String
+  country        String?
+  device         String?
+  os             String?
+  browser        String?
+  userAgent      String?  @db.Text
+  referer        String?  @db.Text
+  source         String?
+  sub1           String?
+  sub2           String?
+  sub3           String?
+  sub4           String?
+  sub5           String?
+  isBot          Boolean       @default(false)
+  isUnique       Boolean       @default(true)
+  createdAt      DateTime      @default(now())
+
+  events Event[]
+  leads  Lead[]
+
+  @@index([createdAt])
+  @@index([affiliateId, createdAt])
+  @@index([landerId, createdAt])
+  @@index([campaignId, createdAt])
+  @@index([country])
+  @@index([isBot])
+  @@index([ip, createdAt])
+}
+
+model Event {
+  id          String    @id @default(cuid())
+  type        EventType
+  clickId     String
+  click       Click     @relation(fields: [clickId], references: [clickId], onDelete: Cascade)
+  landerId    String?
+  lander      Lander?   @relation(fields: [landerId], references: [id], onDelete: SetNull)
+  campaignId  String?
+  affiliateId String?
+  isBot       Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  @@index([type, createdAt])
+  @@index([affiliateId, createdAt])
+  @@index([landerId, createdAt])
+}
+
+model Lead {
+  id              String     @id @default(cuid())
+  name            String
+  lastName        String     @default("")
+  email           String
+  phone           String
+  country         String?
+  status          LeadStatus @default(new)
+  payout          Float?     @default(0)
+  clickId         String?
+  click           Click?     @relation(fields: [clickId], references: [clickId], onDelete: SetNull)
+  landerId        String
+  lander          Lander     @relation(fields: [landerId], references: [id], onDelete: Restrict)
+  campaignId      String?
+  campaign        Campaign?  @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  affiliateId     String?
+  affiliate       User?      @relation("AffiliateLeads", fields: [affiliateId], references: [id], onDelete: SetNull)
+  integrationId   String?
+  ip              String?
+  device          String?
+  partnerSentAt   DateTime?
+  partnerStatus   String?
+  partnerResponse String?    @db.Text
+  externalId      String?
+  notes           String?    @db.Text
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@index([createdAt])
+  @@index([status, createdAt])
+  @@index([email, createdAt])
+  @@index([phone, createdAt])
+  @@index([landerId, createdAt])
+  @@index([affiliateId, createdAt])
+}

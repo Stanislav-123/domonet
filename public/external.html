@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AURUM — торговый счёт BTC</title>
+    <style>
+      :root {
+        --bg: #070b12;
+        --card: #101826;
+        --ink: #e8eef8;
+        --dim: #8b97ab;
+        --line: #243044;
+        --gold: #d4b06a;
+        --gold-ink: #1a1306;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; background: var(--bg); color: var(--ink); }
+      body {
+        font-family: Georgia, "Times New Roman", serif;
+        min-height: 100vh;
+      }
+      .wrap { max-width: 980px; margin: 0 auto; padding: 28px 20px 80px; }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 16px;
+      }
+      .logo { letter-spacing: 0.28em; font-size: 13px; color: var(--gold); }
+      nav { display: flex; gap: 18px; font-size: 14px; color: var(--dim); }
+      h1 {
+        font-size: clamp(32px, 6vw, 56px);
+        font-weight: 500;
+        line-height: 1.12;
+        margin: 36px 0 14px;
+        max-width: 14ch;
+      }
+      .lead { max-width: 46ch; color: var(--dim); font-size: 18px; line-height: 1.55; }
+      .cta {
+        display: inline-block;
+        margin-top: 28px;
+        background: var(--gold);
+        color: var(--gold-ink);
+        text-decoration: none;
+        padding: 12px 22px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+      }
+      .grid {
+        margin-top: 48px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        padding: 18px;
+      }
+      .card b { display: block; font-size: 22px; margin-bottom: 6px; color: var(--gold); }
+      .card span { color: var(--dim); font-size: 14px; line-height: 1.45; }
+      .panel {
+        margin-top: 40px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        padding: 22px;
+      }
+      label { display: block; font-size: 13px; color: var(--dim); margin: 12px 0 6px; }
+      input {
+        width: 100%;
+        background: #0b1220;
+        border: 1px solid var(--line);
+        color: var(--ink);
+        padding: 10px 12px;
+        font-size: 16px;
+      }
+      .hint {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: #152033;
+        color: #c9d6ea;
+        font-family: Segoe UI, sans-serif;
+        font-size: 13px;
+        line-height: 1.45;
+        padding: 10px 16px;
+        border-bottom: 1px solid #2a3d5a;
+      }
+      .hint code {
+        background: #0b1220;
+        padding: 1px 6px;
+        color: var(--gold);
+      }
+      .ok { color: #9be07c; }
+      .warn { color: #ffb86b; }
+    </style>
+  </head>
+  <body>
+    <div class="hint" id="hint">
+      Это тестовый внешний ленд. Создайте кампанию в админке, скопируйте скрипт сюда
+      (перед <code>&lt;/body&gt;</code>) или откройте
+      <code>/external.html?code=XXXX</code>.
+      Проверка: кнопка «назад» в браузере → домонет; курсор вверх к вкладкам → попап.
+      <span id="status" class="warn"> скрипт пока не найден</span>
+    </div>
+
+    <div class="wrap">
+      <header>
+        <div class="logo">AURUM DESK</div>
+        <nav>
+          <span>Рынки</span>
+          <span>Счета</span>
+          <span>Вход</span>
+        </nav>
+      </header>
+
+      <h1>Откройте счёт и торгуйте BTC с живым стаканом</h1>
+      <p class="lead">
+        Демо-лендинг «чужого» оффера. Сам по себе никуда не ведёт — домонет
+        должен сработать на назад и на уход курсора, после того как подключите скрипт кампании.
+      </p>
+      <a class="cta" href="#form">Открыть счёт</a>
+
+      <div class="grid">
+        <div class="card"><b>0%</b><span>комиссия на первый месяц</span></div>
+        <div class="card"><b>1:100</b><span>плечо на мажорах</span></div>
+        <div class="card"><b>24/7</b><span>касса и поддержка</span></div>
+      </div>
+
+      <div class="panel" id="form">
+        <p style="margin:0 0 8px;color:var(--gold);letter-spacing:.16em;font-size:12px">ACCOUNT</p>
+        <p style="margin:0 0 16px;font-size:22px">Заявка на демо-счёт</p>
+        <label>Имя</label>
+        <input placeholder="Алексей" />
+        <label>Email</label>
+        <input placeholder="mail@example.com" />
+        <a class="cta" href="#form" onclick="return false">Продолжить</a>
+      </div>
+    </div>
+
+    <script src="http://localhost:3000/t.js" data-code="duGTAIiH"></script>
+
+    <script>
+      (function () {
+        var status = document.getElementById("status");
+        function mark(ok, text) {
+          if (!status) return;
+          status.className = ok ? "ok" : "warn";
+          status.textContent = " " + text;
+        }
+        function attach(code) {
+          var origin =
+            location.protocol === "file:" ? "http://localhost:3000" : location.origin;
+          var s = document.createElement("script");
+          s.src = origin + "/t.js";
+          s.setAttribute("data-code", code);
+          s.onload = function () {
+            mark(true, "скрипт загружен, код " + code);
+          };
+          s.onerror = function () {
+            mark(false, "не удалось загрузить /t.js — поднимите next dev");
+          };
+          document.body.appendChild(s);
+        }
+        var pasted = document.querySelector("script[src*='t.js'][data-code]");
+        if (pasted) {
+          mark(true, "скрипт кампании подключён, код " + pasted.getAttribute("data-code"));
+          return;
+        }
+        var code = new URLSearchParams(location.search).get("code");
+        if (code) {
+          attach(code.trim());
+          return;
+        }
+        mark(false, "скрипт пока не найден — вставьте сниппет или добавьте ?code=");
+      })();
+    </script>
+  </body>
+</html>
