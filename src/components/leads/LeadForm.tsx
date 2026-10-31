@@ -34,6 +34,7 @@ export function LeadForm({ landerId, clickId, country, cta, onFocus }: Props) {
   const [errors, setErrors] = useState<Partial<Record<Field, string>>>({});
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (country) setGeo(country);
   }, [country]);
 
@@ -52,6 +53,7 @@ export function LeadForm({ landerId, clickId, country, cta, onFocus }: Props) {
   }, [geo, country]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPhone((prev) => formatPhoneInput(prev, rule));
   }, [rule]);
 

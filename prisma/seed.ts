@@ -26,9 +26,9 @@ const LANDERS: {
 ];
 
 async function main() {
-  const login = "stasAdm";
-  const password = "26072001";
-  const name = "Администратор";
+  const login = process.env.ADMIN_LOGIN || "admin";
+  const password = process.env.ADMIN_PASSWORD || "changeme123";
+  const name = process.env.ADMIN_NAME || "Администратор";
 
   const passwordHash = await bcrypt.hash(password, 12);
   const owner = await prisma.user.upsert({

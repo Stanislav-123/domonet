@@ -2,8 +2,8 @@ import { prisma } from "./db";
 import { writeFile, mkdir, unlink } from "fs/promises";
 import { join } from "path";
 
-const PHP_DIR = "C:\\xampp\\htdocs\\integrations";
-const PHP_BASE_URL = "http://localhost/integrations";
+const PHP_DIR = process.env.PHP_INTEGRATION_DIR || "/var/www/integrations";
+const PHP_BASE_URL = process.env.PHP_INTEGRATION_URL || "http://localhost/integrations";
 
 export async function saveIntegrationFile(id: string, code: string) {
   await mkdir(PHP_DIR, { recursive: true });
