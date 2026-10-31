@@ -63,7 +63,7 @@ export function BriefingLand(props: Props) {
         </button>
       ) : (
         <div className="mt-5">
-          <LeadForm landerId={props.landerId} clickId={props.clickId} country={props.country} onStart={props.onFormStart} />
+          <LeadForm landerId={props.landerId} clickId={props.clickId} country={props.country} onFocus={props.onFormStart} />
         </div>
       )}
     </LanderFrame>

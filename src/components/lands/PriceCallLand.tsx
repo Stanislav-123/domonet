@@ -66,6 +66,7 @@ export function PriceCallLand(props: Props) {
   const [phase, setPhase] = useState<"pick" | "wait" | "win">("pick");
   const [choice, setChoice] = useState<"up" | "down" | null>(null);
   const [left, setLeft] = useState(7);
+  const [strike, setStrike] = useState(0);
   const [line, setLine] = useState(() => seedLine());
   const [candles, setCandles] = useState(() => toCandles(seedLine(96)));
   const [trades, setTrades] = useState(() => {
@@ -78,7 +79,6 @@ export function PriceCallLand(props: Props) {
       { id: "t5", side: "buy" as const, px: base * 1.0001, sz: 0.05 },
     ];
   });
-  const strikeRef = useRef(0);
   const targetRef = useRef(0);
   const waitAt = useRef(0);
   const tickN = useRef(0);
@@ -106,8 +106,11 @@ export function PriceCallLand(props: Props) {
   }, [market.ready, market.prices.BTC]);
 
   const price = props.mode === "candles" ? candles[candles.length - 1]!.c : line[line.length - 1]!;
-  priceRef.current = price;
   const prev = props.mode === "candles" ? candles[candles.length - 2]?.c ?? price : line[line.length - 2] ?? price;
+  
+  useEffect(() => {
+    priceRef.current = price;
+  }, [price]);
   const up = price >= prev;
   const change = market.change24h.BTC || ((price - (line[0] || price)) / (line[0] || price)) * 100;
 
@@ -188,10 +191,17 @@ export function PriceCallLand(props: Props) {
   }, []);
 
   useEffect(() => {
-    if (phase !== "wait") return;
+    if (phase !== "wait") {
+      return;
+    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLeft(7);
-    const count = setInterval(() => setLeft((n) => Math.max(0, n - 1)), 1000);
-    const done = setTimeout(() => setPhase("win"), 7200);
+    const count = setInterval(() => {
+      setLeft((n) => Math.max(0, n - 1));
+    }, 1000);
+    const done = setTimeout(() => {
+      setPhase("win");
+    }, 7200);
     return () => {
       clearInterval(count);
       clearTimeout(done);
@@ -200,7 +210,7 @@ export function PriceCallLand(props: Props) {
 
   function pick(dir: "up" | "down") {
     setChoice(dir);
-    strikeRef.current = price;
+    setStrike(price);
     const move = liveRef.current * rnd(0.0004, 0.0012);
     targetRef.current = dir === "up" ? price + move : price - move;
     waitAt.current = Date.now();
@@ -209,7 +219,7 @@ export function PriceCallLand(props: Props) {
 
   const bids = bookLevels(price, "bid");
   const asks = bookLevels(price, "ask");
-  const strikeY = phase !== "pick" ? yOf(strikeRef.current) : null;
+  const strikeY = phase !== "pick" ? yOf(strike) : null;
 
   return (
     <LanderFrame wide ticker={<div className="px-4 pt-3"><CoinTicker /></div>}>
@@ -307,7 +317,7 @@ export function PriceCallLand(props: Props) {
       ) : null}
       {phase === "wait" ? (
         <p className="mt-4 font-mono text-sm text-[var(--signal)]">
-          {t("price.wait", { n: left })} · {t("price.mark")} {strikeRef.current.toFixed(1)}
+          {t("price.wait", { n: left })} · {t("price.mark")} {strike.toFixed(1)}
         </p>
       ) : null}
       {phase === "win" ? (
@@ -316,7 +326,7 @@ export function PriceCallLand(props: Props) {
             <p className="kicker">{t("price.win")}</p>
             <p className="mt-1 text-xl">{t("price.winDir", { dir: choice === "up" ? t("price.up") : t("price.down") })}</p>
             <p className="mt-2 font-mono text-sm">
-              {strikeRef.current.toFixed(1)} → {price.toFixed(1)}
+              {strike.toFixed(1)} → {price.toFixed(1)}
             </p>
             <p className="mt-2 text-sm text-[var(--dim)]">{t("price.winHint")}</p>
           </div>

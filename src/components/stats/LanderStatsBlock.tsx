@@ -85,9 +85,11 @@ export function LanderStatsBlock({
   const [country, setCountry] = useState("");
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!landerId && landers[0]) setLanderId(landers[0].lander.id);
   }, [landers, landerId]);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!country && geo[0]) setCountry(geo[0].country);
   }, [geo, country]);
 

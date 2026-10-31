@@ -3,9 +3,12 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// Note: Schema is compatible with both PostgreSQL and SQLite
+// For SQLite, change provider to "sqlite" and use DATABASE_URL="file:./prisma/dev.db"
 
 enum Role {
   owner
@@ -84,7 +87,7 @@ model Campaign {
 model Integration {
   id        String   @id @default(cuid())
   name      String
-  code      String   @db.MediumText
+  code      String
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -172,8 +175,8 @@ model Click {
   device         String?
   os             String?
   browser        String?
-  userAgent      String?  @db.Text
-  referer        String?  @db.Text
+  userAgent      String?
+  referer        String?
   source         String?
   sub1           String?
   sub2           String?
@@ -235,9 +238,9 @@ model Lead {
   device          String?
   partnerSentAt   DateTime?
   partnerStatus   String?
-  partnerResponse String?    @db.Text
+  partnerResponse String?
   externalId      String?
-  notes           String?    @db.Text
+  notes           String?
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 

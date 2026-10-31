@@ -18,14 +18,16 @@ export function I18nProvider({
   children: React.ReactNode;
   initialLocale?: Locale;
 }) {
-  const [locale, setLocale] = useState<Locale>(initialLocale);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [locale, setLocale] = useState<Locale>(() => {
+    if (typeof window === "undefined") return initialLocale;
+    return detectLocale(navigator.language || navigator.languages?.[0]);
+  });
 
   useEffect(() => {
-    const next = detectLocale(navigator.language || navigator.languages?.[0]);
-    setLocale(next);
-    document.documentElement.lang = next;
-    document.documentElement.dir = next === "ar" ? "rtl" : "ltr";
-  }, []);
+    document.documentElement.lang = locale;
+    document.documentElement.dir = locale === "ar" ? "rtl" : "ltr";
+  }, [locale]);
 
   const value = useMemo(
     () => ({
