@@ -295,7 +295,3 @@ npm start
 vercel
 # Добавьте env переменные в dashboard
 ```
-
-## Лицензия
-
-MIT
